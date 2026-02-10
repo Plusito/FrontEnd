@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="ejemplo.js"></script>
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+      }
+      div {
+        transition: 1s;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 350px;
+        height: 200px;
+        background-color: grey;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="magic" onmouseover="magic()" onmouseout="backColor()">MAGIC</div>
+  </body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokédex - 1025 Pokémon</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #ffe600;
+    }
+    h1 {
+      text-align: center;
+      padding: 20px;
+      color: #333;
+    }
+    .search-box {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .search-box input {
+      width: 60%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      font-size: 16px;
+    }
+    .pokedex {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+      padding: 0 20px 40px;
+      max-width: 1200px;
+      margin: auto;
+    }
+    .pokemon {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      overflow: hidden;
+      text-align: center;
+      transition: transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .pokemon:hover {
+      transform: scale(1.05);
+    }
+    .pokemon img {
+      background: #f2f2f2;
+      padding: 10px;
+      height: 120px;
+      object-fit: contain;
+    }
+    .pokemon-info {
+      padding: 12px;
+    }
+    .pokemon-info h3 {
+      margin: 6px 0 4px;
+      font-size: 18px;
+      color: #222;
+    }
+    .pokemon-info .id {
+      font-size: 12px;
+      color: #999;
+    }
+    .types {
+      margin: 8px 0;
+    }
+    .type {
+      display: inline-block;
+      background: #ddd;
+      color: #333;
+      padding: 2px 6px;
+      margin: 2px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .evolution {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Pokédex - 1025 Pokémon</h1>
+  <div class="search-box">
+    <input type="text" id="search" placeholder="Filtra pokemons por nombre...">
+  </div>
+  <div class="pokedex" id="pokedex"></div>
+
+  <script>
+    const pokedex = document.getElementById('pokedex');
+    const searchInput = document.getElementById('search');
+    let allPokemon = [];
+
+    async function fetchPokemon(id) {
+      const url = `https://pokeapi.co/api/v2/pokemon/${id}`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      const speciesRes = await fetch(data.species.url);
+      const speciesData = await speciesRes.json();
+
+      let evolutionFrom = speciesData.evolves_from_species ? speciesData.evolves_from_species.name : null;
+
+      return {
+        name: data.name,
+        image: data.sprites.other["official-artwork"].front_default,
+        id: data.id,
+        types: data.types.map(t => t.type.name),
+        evolvesFrom: evolutionFrom
+      };
+    }
+
+    async function loadPokemon() {
+      for (let i = 1; i <= 1025; i++) {
+        try {
+          const pokemon = await fetchPokemon(i);
+          allPokemon.push(pokemon);
+          createCard(pokemon);
+        } catch (error) {
+          console.error(`Error al cargar el Pokémon #${i}`, error);
+        }
+      }
+    }
+
+    function createCard(pokemon) {
+      const pokemonEl = document.createElement('div');
+      pokemonEl.classList.add('pokemon');
+      pokemonEl.innerHTML = `
+        <img src="${pokemon.image}" alt="${pokemon.name}">
+        <div class="pokemon-info">
+          <div class="id">ID / ${pokemon.id}</div>
+          <h3>${capitalize(pokemon.name)}</h3>
+          <div class="types">
+            ${pokemon.types.map(type => `<span class="type">${type.toUpperCase()}</span>`).join('')}
+          </div>
+          ${pokemon.evolvesFrom ? `<div class="evolution">Evoluciona de: <b>${pokemon.evolvesFrom}</b></div>` : ''}
+        </div>
+      `;
+      pokedex.appendChild(pokemonEl);
+    }
+
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    searchInput.addEventListener('input', () => {
+      const value = searchInput.value.toLowerCase();
+      pokedex.innerHTML = '';
+      allPokemon.filter(p => p.name.includes(value)).forEach(createCard);
+    });
+
+    loadPokemon();
+  </script>
+</body>
+</html>
